@@ -1,3 +1,3 @@
-# SCR-Program
+# SCR_Program
 
-These program is writen to analysis SCR response timely. We also hope that we can analysis enornomous SCR raw datas at one click.
+This program is written to analyze SCR responses timely. We also hope that we can analyze numerous SCR raw data at once.
