@@ -39,19 +39,28 @@ target = DEFAULT_TARGET
 
 # Define SCR Response
 def SCR_resp(rise_begin, rise_end, max_rise_time, situation, target, display_window):
+    """
+    :param rise_begin:
+    :param rise_end:
+    :param max_rise_time:
+    :param situation: CS+, CS-, CS+E
+    :param target: which CS 由後往前數，1=最後一個
+    :param display_window: window (sec)
+    :return:
+    """
     # initialize min and max index
     max_index = 0
     min_index = 0
-    place_SCR = df.loc[df[2] == situation].iloc[-target][0]
+    place_SCR = df.loc[df[2] == situation].iloc[-target][0] # event onset time
     # Estimate CS Response
     # SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)]
     # SCR_window = df[(df[0]>= place_SCR + rise_begin) & (df[0]<= place_SCR+display_window-rise_begin)]
     ## find the space of scr response
-    SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)]
+    SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)] # resp開始算數的範圍
     SCR_df = df[(df[0] >= place_SCR) & (df[0] <= place_SCR + display_window)]
-    trough_index = find_peaks(-SCR_start[1])[0]
+    trough_index = find_peaks(-SCR_start[1])[0] # 找 through 和ˋpeak 正找波峰 負找波谷
     SCR_response = 0
-    ## if there is not trougt found in the space
+    ## if no trough found in the space
     if len(trough_index) == 0:
         SCR_response = 0
         min_index = 0
@@ -152,7 +161,7 @@ def max_US_resp(rise_begin, rise_end, max_rise_time, target, display_window):
     max_us_list = [SCR_resp(rise_begin, rise_end, max_rise_time, 3, target, display_window)[0] for target in
                    range(1, US_len + 1)]
     max_us_temp = max(max_us_list)
-    if max_us_temp > max_us and max_us_list != 0:
+    if max_us_temp > max_us and len(max_us_list) != 0:
         max_us = max_us_temp
     return (max_us)
 
@@ -220,10 +229,10 @@ def data_analysis(file_path, rise_begin, rise_end, display_window, max_rise_time
     df = pd.read_csv(file_path, delimiter="\t", header=None)
     # CS Response
     ##CS+
-    CSP_fun = SCR_resp(rise_begin, rise_end, max_rise_time, 2, target, display_window)
-    CSP_response_ns = round(CSP_fun[0], 4)
-    CSP_df_ns = CSP_fun[1]
-    CSP_res_figure_ns = CSP_fun[2]
+    CSP_func = SCR_resp(rise_begin, rise_end, max_rise_time, 2, target, display_window)
+    CSP_response_ns = round(CSP_func[0], 4)
+    CSP_df_ns = CSP_func[1]
+    CSP_res_figure_ns = CSP_func[2]
     ##CS-
     CSM_fun = SCR_resp(rise_begin, rise_end, max_rise_time, 1, target, display_window)
     CSM_response_ns = round(CSM_fun[0], 4)
