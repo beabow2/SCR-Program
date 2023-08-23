@@ -9,21 +9,11 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from scipy.signal import find_peaks
 
-# ---------------------------- CONSTANTS ------------------------------- #
-DEFAULT_RISE_BEGIN = 0.5
-DEFAULT_RISE_END = 4.5
-DEFAULT_DISPLAY_WINDOW = 10.0
-DEFAULT_MAX_RISE_TIME = 5.0
-DEFAULT_TARGET = 1
+from parameter import Parameters
 
-# Define Default Parameter
-rise_begin = DEFAULT_RISE_BEGIN
-rise_end = DEFAULT_RISE_END
-display_window = DEFAULT_DISPLAY_WINDOW
-max_rise_time = DEFAULT_MAX_RISE_TIME
-target = DEFAULT_TARGET
+# Set Default Parameter
+parameter = Parameters()
 
-# main program
 # Find inflection point
 """def find_inflection(data):
     inflection_points = list()
@@ -349,7 +339,7 @@ def open_file():
     file_path = filedialog.askopenfilename(initialdir="/", title="Choose Data",
                                            filetypes=(("txt files", "*.txt"), ("all files", "*.*")))
     if file_path:
-        data_analysis(file_path, rise_begin, rise_end, display_window, max_rise_time, target)
+        data_analysis(file_path, parameter.rise_begin, parameter.rise_end, parameter.display_window, parameter.max_rise_time, parameter.target)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
