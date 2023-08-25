@@ -1,15 +1,15 @@
 import tkinter as tk
-from tkinter import filedialog, ttk, Scale
 import tkinter.messagebox
-
-import pandas as pd
-import numpy as np
+from tkinter import filedialog, ttk, Scale
 
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from scipy.signal import find_peaks
 
 from parameter import Parameters
+
+## test pull request from pycharm
 
 # Set Default Parameter
 parameter = Parameters()
@@ -41,14 +41,14 @@ def SCR_resp(rise_begin, rise_end, max_rise_time, situation, target, display_win
     # initialize min and max index
     max_index = 0
     min_index = 0
-    place_SCR = df.loc[df[2] == situation].iloc[-target][0] # event onset time
+    place_SCR = df.loc[df[2] == situation].iloc[-target][0]  # event onset time
     # Estimate CS Response
     # SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)]
     # SCR_window = df[(df[0]>= place_SCR + rise_begin) & (df[0]<= place_SCR+display_window-rise_begin)]
     ## find the space of scr response
-    SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)] # resp開始算數的範圍
+    SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)]  # resp開始算數的範圍
     SCR_df = df[(df[0] >= place_SCR) & (df[0] <= place_SCR + display_window)]
-    trough_index = find_peaks(-SCR_start[1])[0] # 找 through 和ˋpeak 正找波峰 負找波谷
+    trough_index = find_peaks(-SCR_start[1])[0]  # 找 through 和ˋpeak 正找波峰 負找波谷
     SCR_response = 0
     ## if no trough found in the space
     if len(trough_index) == 0:
@@ -109,11 +109,11 @@ def SCR_resp(rise_begin, rise_end, max_rise_time, situation, target, display_win
         min_index = 0
         max_index = 0
         SCR_res_figure = SCR_df.loc[min_index:max_index]
-    return (SCR_response, SCR_df, SCR_res_figure)
+    return SCR_response, SCR_df, SCR_res_figure
 
 
 # Graph Update
-def update_plot(event=None):
+def update_plot():
     ##draw graph
     figure.clear()
     # set the number of graph
@@ -141,7 +141,7 @@ def update_plot(event=None):
 
 
 # Find Maximum US
-def max_US_resp(rise_begin, rise_end, max_rise_time, target, display_window):
+def max_US_resp(rise_begin, rise_end, max_rise_time, display_window):
     # set rise_end to capture US response
     if rise_end <= 9.2:
         rise_end = 9.2
@@ -153,10 +153,11 @@ def max_US_resp(rise_begin, rise_end, max_rise_time, target, display_window):
     max_us_temp = max(max_us_list)
     if max_us_temp > max_us and len(max_us_list) != 0:
         max_us = max_us_temp
-    return (max_us)
+    return max_us
 
 
 # Update CS Response
+# noinspection PyGlobalUndefined
 def CS_resp_update(CSP_res_temp, CSM_res_temp, CSP_df_temp, CSM_df_temp, CSP_res_figure_temp, CSM_res_figure_temp):
     global CSP_response
     global CSM_response
@@ -230,7 +231,7 @@ def data_analysis(file_path, rise_begin, rise_end, display_window, max_rise_time
     CSM_res_figure_ns = CSM_fun[2]
     # Standardization
     ###US
-    max_us = round(max_US_resp(rise_begin, rise_end, max_rise_time, target, display_window), 4)
+    max_us = round(max_US_resp(rise_begin, rise_end, max_rise_time, display_window), 4)
     MUS_label.config(text=f"Max US:{max_us:}")
     ###Standarize CSP and CSM
     CSP_response_stand = round(CSP_response_ns / max_us, 4)
@@ -339,7 +340,8 @@ def open_file():
     file_path = filedialog.askopenfilename(initialdir="/", title="Choose Data",
                                            filetypes=(("txt files", "*.txt"), ("all files", "*.*")))
     if file_path:
-        data_analysis(file_path, parameter.rise_begin, parameter.rise_end, parameter.display_window, parameter.max_rise_time, parameter.target)
+        data_analysis(file_path, parameter.rise_begin, parameter.rise_end, parameter.display_window,
+                      parameter.max_rise_time, parameter.target)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
