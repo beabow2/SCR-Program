@@ -9,7 +9,6 @@ from scipy.signal import find_peaks
 
 from parameter import Parameters
 
-## test pull request from pycharm
 
 # Set Default Parameter
 parameter = Parameters()
