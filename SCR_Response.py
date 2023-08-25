@@ -11,7 +11,6 @@ class SCR_resp:
         self.SCR_response = 0
         self.parameter = Parameters()
     def SCR_resp(self,rise_begin, rise_end, max_rise_time, situation, target,display_window,df):
-        #initialize min and max index
         place_SCR = df.loc[df[2] == situation].iloc[target-1][0]
         # Estimate CS Response
         #SCR_start = df[(df[0] >= place_SCR + rise_begin) & (df[0] <= place_SCR + rise_end)]
