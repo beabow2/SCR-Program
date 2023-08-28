@@ -22,7 +22,7 @@ class FearDisplayApp:
         self.max_y_ax1_ax2 = 8.0
         self.min_y_ax3 = -1.0
         self.max_y_ax3 = 1.0
-        self.TIME_STEP = 0.5
+        self.TIME_STEP = 0.1
         self.parameter = Parameters()
         self.init_ui()
 
@@ -98,7 +98,7 @@ class FearDisplayApp:
             self.data_analysis(self.file_path, self.parameter.rise_begin, self.parameter.rise_end, self.parameter.display_window,
                           self.parameter.max_rise_time, self.parameter.target)
 
-    def SCR_resp(self,rise_begin, rise_end, max_rise_time, situation, target, display_window, time_step=0.5):
+    def SCR_resp(self,rise_begin, rise_end, max_rise_time, situation, target, display_window, time_step=0.1):
         """
         :param rise_begin: the minimum response onset time
         :param rise_end:   the maximum response onset time
@@ -117,7 +117,9 @@ class FearDisplayApp:
         # Estimate CS Response
         SCR_start = self.df[(self.df[0] >= place_SCR + rise_begin) & (self.df[0] <= place_SCR + rise_end)]
         SCR_df = self.df[(self.df[0] >= place_SCR) & (self.df[0] <= place_SCR + display_window)]
+        print("SCR_df",SCR_df)
         trough_index = find_peaks(-SCR_start[1])[0]
+        print("trough_index",trough_index)
         SCR_response = 0
         # if no trough found in the space
         if len(trough_index) == 0:
@@ -188,11 +190,11 @@ class FearDisplayApp:
         if situation == 1:
             self.CSM_df = SCR_df
             self.CSM_res_figure = SCR_res_figure
-            self.CSM_response = SCR_response
+            self.CSM_response = round(SCR_response,4)
         elif situation == 2 :
             self.CSP_df = SCR_df
             self.CSP_res_figure = SCR_res_figure
-            self.CSP_response = SCR_response
+            self.CSP_response = round(SCR_response,4)
 
 
         return SCR_response
@@ -205,7 +207,7 @@ class FearDisplayApp:
         US_len = len(self.df.loc[self.df[2] == 3])
         max_us_list = [self.SCR_resp(rise_begin, rise_end, max_rise_time, 3, target, display_window) for target in
                        range(1, US_len + 1)]
-        self.max_us = max(max_us_list)
+        self.max_us = round(max(max_us_list),4)
         print(self.max_us)
 
     # Update CS shown on the GUI
@@ -301,9 +303,6 @@ class FearDisplayApp:
         global infl2
         infl2 = find_inflection(CSM_df)
         print("CSP",infl2)"""
-        # draw graph
-        self.update_plot(self.CSP_df, self.CSP_res_figure, self.CSM_df, self.CSM_res_figure)
-
 
     def adjust_parameters(self):
         # ---------------------------- PARAMETER SETTINGS ------------------------------- #
