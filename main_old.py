@@ -1,3 +1,14 @@
+<<<<<<< HEAD:main.py
+from parameter import Parameters
+from SCRGUI import SCRGUI
+from SCRAnalysis import SCRAnalysis
+
+if __name__ == "__main__":
+    parameters = Parameters()
+    scr_analysis = SCRAnalysis(parameters)
+    scr_gui = SCRGUI(scr_analysis)
+    scr_gui.run()
+=======
 import tkinter as tk
 import tkinter.messagebox
 from tkinter import filedialog, ttk, Scale
@@ -433,3 +444,4 @@ ax3 = figure.add_subplot(122)
 ax1.set_ylim(2.0, 8.0)
 ax3.set_ylim(-1.0, 1.0)
 window.mainloop()
+>>>>>>> main:main_old.py
