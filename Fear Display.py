@@ -87,8 +87,6 @@ class FearDisplayApp:
         self.ax3 = self.figure.add_subplot(122)
         self.ax1.set_ylim(self.min_y_ax1_ax2, self.max_y_ax1_ax2)
         self.ax3.set_ylim(self.min_y_ax3, self.max_y_ax3)
-
-        self.window.mainloop()
     def run(self):
         self.window.mainloop()
     def open_file(self):
