@@ -1,6 +1,26 @@
 from scipy.signal import find_peaks
 class SCR_RESP:
+    """
+    :method SCR_resp:
+    :param rise_begin: the minimum response onset time
+    :param rise_end:   the maximum response onset time
+    :param max_rise_time:  the maximum time of the rising portion
+    :param cs_type: CS+, CS-, CS+E
+    :param target: which CS to be analyzed (reversed count)
+    :param display_window: window (sec)
+    :param order: how  to calculate the response target
+    :param time_step: time step (sec)
+    :method get_SCR_response
+    :return : SCR_response
+    :method get_SCR_res_figure
+    :return: SCR_res_figure
+    :method SCR_df:
+    :return: SCR_df
+    """
     def __init__(self,df):
+        """
+        initialize parameters
+        """
         self.max_index=0
         self.min_index=0
         self.SCR_df = None
@@ -10,6 +30,8 @@ class SCR_RESP:
 
     def scr_resp(self,rise_begin, rise_end, max_rise_time, cs_type, target, display_window,order = "normal", time_step=0.1):
         """
+        find the SCR response
+
         :param rise_begin: the minimum response onset time
         :param rise_end:   the maximum response onset time
         :param max_rise_time:  the maximum time of the rising portion
@@ -94,10 +116,19 @@ class SCR_RESP:
             max_index = 0
             self.SCR_res_figure = SCR_df.loc[min_index:max_index]
     def get_SCR_response(self):
+        """
+        Get the value of SCR_response
+        """
         return round(self.SCR_response,4)
     def get_SCR_df(self):
+        """
+        Get the DataFrame of SCR_df
+        """
         return self.SCR_df
     def get_SCR_res_figure(self):
+        """
+        Get the DataFrame of SCR_res_figure
+        """
         return self.SCR_res_figure
 
 

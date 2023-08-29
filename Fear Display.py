@@ -23,14 +23,48 @@ class FearDisplayApp:
         self.min_y_ax3 = -1.0
         self.max_y_ax3 = 1.0
         self.TIME_STEP = 0.1
-        self.parameter = Parameters()
+        self.init_objects()
+        self.init_parameters()
         self.init_ui()
+    def init_objects(self):
+
+        """
+        Initialize objects
+        :object parameter:
+        -----------------------------------------------------------------------------------------------------------------------------
+        :method reset_to_defaults:
+        Reset all parameters to their default values.
+        :method update_parameters:
+        Update parameters with new values
+        ------------------------------------------------------------------------------------------------------------------------------
+        :object SCR_resp:
+        :method SCR_resp:
+        :param rise_begin: the minimum response onset time
+        :param rise_end:   the maximum response onset time
+        :param max_rise_time:  the maximum time of the rising portion
+        :param cs_type: CS+, CS-, CS+E
+        :param target: which CS to be analyzed (reversed count)
+        :param display_window: window (sec)
+        :param order: how  to calculate the response target
+        :param time_step: time step (sec)
+        :method get_SCR_response
+        :return : SCR_response
+        :method get_SCR_res_figure
+        :return: SCR_res_figure
+        :method SCR_df:
+        :return: SCR_df
+        ---------------------------------------------------------------------------------------------------------------------------
+
+        """
+        self.parameter = Parameters()
+        self.SCR_resp = None
+
+    def init_parameters(self):
         self.rise_begin = self.parameter.rise_begin
         self.rise_end = self.parameter.rise_end
         self.max_rise_time = self.parameter.max_rise_time
         self.display_window = self.parameter.display_window
         self.target = self.parameter.target
-        self.SCR_resp = None
 
     def init_ui(self):
         self.window = tk.Tk()
