@@ -26,9 +26,24 @@ class DataAnalysis:
             df = pd.read_csv(file_path, delimiter=delimiter, header=header)
             return df
 
-    def data_analysis(self,phase,ext_num,output = "both"):
+
+    def max_US_resp(self,SCR,df,rise_begin,rise_end,max_rise_time,display_window):
+        # set rise_end to capture US response
+        if rise_end < 9.2:
+            rise_end = 9.2
+        US_len = len(df.loc[df[2] == 3])
+        max_us_list = []
+        for target in range(1,US_len+1):
+            SCR.scr_resp(rise_begin,rise_end,max_rise_time,cs_type=3,
+                                   target=target,display_window=display_window)
+            max_us_list.append(SCR.get_SCR_response())
+        max_us = round(max(max_us_list),4)
+        return max_us
+
+    def data_analysis(self,phase,ext_num,output = "both",standardze=True):
         """
         Perform data analysis on the given data
+        :param standardze: whether to standardize the data
         :param phase: which state to analyze, with "acq" or "ext"
         :param ext_num: the number of CS in extinction phase
         :param output:  the output type with default "both" and options "both", "individual", and "group"
@@ -71,6 +86,7 @@ class DataAnalysis:
                         SCR.scr_resp(rise_begin, rise_end, max_rise_time, cs_type, target, display_window, order="normal")
                         SCR_response = SCR.get_SCR_response()
                         cs_type_response.append(SCR_response)
+
                 ## ext phase
                 elif phase == "ext" and cs_type != 3:
                     target_num = ext_num
@@ -81,15 +97,21 @@ class DataAnalysis:
 
                 if phase != "ext" or cs_type != 3:
                     cs_type_data[f"cs_type{cs_type}"] = cs_type_response
-            # save individual analysis
+            # transform data to dataframe
             results_df = pd.DataFrame.from_dict(cs_type_data, orient='index').T
+            #standardze
+            if standardze:
+                max_us = self.max_US_resp(SCR,loaded_data,rise_begin,rise_end,max_rise_time,display_window)
+                results_df = round(results_df / max_us,4)
+            #rename
             results_df.rename(columns={"cs_type1": "CS-", "cs_type2": "CS+", "cs_type3": "US"}, inplace=True)
+            # sum up individual analysis
+            total_df += results_df
+            # save individual analysis
             if output == "both" or output == "individual":
                 csv_file_name = f"{phase}_{filename[:-4]}_analysis.csv"
                 results_df.to_csv(csv_file_name, index=True)
-
-            # sum up individual analysis
-            total_df += results_df
+            # save group analysis
         if output == "both" or output == "group":
             # calculate group mean
             total_df = total_df / len(os.listdir(self.folder_path))
@@ -97,17 +119,17 @@ class DataAnalysis:
             csv_file_name = f"{phase}_group_analysis.csv"
             total_df.to_csv(csv_file_name, index=True)
 
-    def output_both_phase(self,ext_num,output = "both"):
+    def output_both_phase(self,ext_num,output = "both",standardze=True):
 
-        self.data_analysis("acq", ext_num,output)
-        self.data_analysis("ext", ext_num,output)
+        self.data_analysis("acq", ext_num,output,standardze)
+        self.data_analysis("ext", ext_num,output,standardze)
 
 
 
 ## run class DataAnalysis
 
 data_analysis = DataAnalysis(r"C:\Users\sharo\OneDrive\桌面\RA Paper\Data Analysis")
-data_analysis.output_both_phase(15,"both")
+data_analysis.output_both_phase(15,"both",False)
 """
 data_analysis.data_analysis("acq",15,"both")
 data_analysis.data_analysis("ext",15,"both")
