@@ -104,6 +104,7 @@ class DataAnalysis:
             total_df += results_df
 
             #add difference
+            results_df["difference"] = round(results_df["CS+"] - results_df["CS-"],4)
             total_df["difference"] = round(total_df["CS+"] - total_df["CS-"],4)
 
 
@@ -128,7 +129,7 @@ class DataAnalysis:
 
 ## run class DataAnalysis
 
-data_analysis = DataAnalysis(r"C:\Users\sharo\OneDrive\桌面\RA Paper\Data Analysis")
+data_analysis = DataAnalysis(r"D:\data\11")
 data_analysis.output_both_phase(0.5,4.5,5,10,15,"both",False)
 """
 data_analysis.data_analysis("acq",15,"both")

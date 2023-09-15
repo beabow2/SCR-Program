@@ -5,7 +5,7 @@ import os
 
 class Ledalab_Cleaning():
 
-    # intilization
+    # initialize
     def __init__(self):
         # CS-
         self.CSM = None
@@ -62,13 +62,13 @@ class Ledalab_Cleaning():
         # ext
         self.ext = pd.concat([self.CSM_ext, self.CSP_ext], axis=1)
 
-    def acq_output(self, filename):
+    def acq_output(self, filename,save_path):
         csv_file_name = f"acq_{filename[:-17]}_ledalab.csv"
-        self.acq.to_csv(csv_file_name, index=True)
+        self.acq.to_csv(save_path+csv_file_name, index=True)
 
-    def ext_output(self, filename):
+    def ext_output(self, filename,save_path):
         csv_file_name = f"ext_{filename[:-17]}_ledalab.csv"
-        self.ext.to_csv(csv_file_name, index=True)
+        self.ext.to_csv(save_path+csv_file_name, index=True)
 
     # batch data cleaning
     def ledalab_cleaning(self, filename, ext_num):
@@ -81,7 +81,7 @@ class Ledalab_Cleaning():
             self.combine_event()
 
 
-    def data_output(self,folder_path,ext_num):
+    def day1_data_output(self,folder_path,save_path,ext_num):
         #create acq and ext group
         total_acq_df = {'CSM': [0] * 100, 'CSP': [0] * 100, 'US': [0] * 100,'difference': [0] * 100}
         total_acq_df = pd.DataFrame.from_dict(total_acq_df)
@@ -92,6 +92,7 @@ class Ledalab_Cleaning():
         #reset index
         total_ext_df.index = range(1, len(total_ext_df) + 1)
         #clean all data
+        file_counter = 0
         for filename in os.listdir(folder_path):
             # Data loading
             file_path = os.path.join(folder_path, filename)
@@ -102,19 +103,20 @@ class Ledalab_Cleaning():
             self.acq['difference'] = round(self.acq['CSP'] - self.acq['CSM'],4)
             self.ext['difference'] = round(self.ext['CSP'] - self.ext['CSM'],4)
             # output individual analysis to CSV
-            self.acq_output(filename)
-            self.ext_output(filename)
+            self.acq_output(filename,save_path)
+            self.ext_output(filename,save_path)
             #add group analysis
             total_acq_df += self.acq
             total_ext_df += self.ext
+            file_counter += 1
 
         # Save group analysis
         csv_file_name = f"acq_group_{filename[:-17]}_ledalab.csv"
-        total_acq_df = round(total_acq_df/len(os.listdir(folder_path)),4)
-        total_acq_df.to_csv(csv_file_name, index=True)
+        total_acq_df = round(total_acq_df/file_counter,4)
+        total_acq_df.to_csv(save_path+csv_file_name, index=True)
         csv_file_name = f"ext_group_{filename[:-17]}_ledalab.csv"
-        total_ext_df = round(total_ext_df/len(os.listdir(folder_path)),4)
-        total_ext_df.to_csv(csv_file_name, index=True)
+        total_ext_df = round(total_ext_df/file_counter,4)
+        total_ext_df.to_csv(save_path+csv_file_name, index=True)
 
 app = Ledalab_Cleaning()
-app.data_output(r"C:\Users\sharo\OneDrive\桌面\RA Paper\DATA\DATA\Exp_SCR\Batch Analysis\test",15)
+app.day1_data_output(r"D:\data\Day1\leda",r"D:\data\Day1\leda\result\\",15)
