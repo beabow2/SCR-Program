@@ -129,9 +129,10 @@ class DataAnalysis:
 
 ## run class DataAnalysis
 
-data_analysis = DataAnalysis(r"D:\data\11")
-data_analysis.output_both_phase(0.5,4.5,5,10,15,"both",False)
-"""
-data_analysis.data_analysis("acq",15,"both")
-data_analysis.data_analysis("ext",15,"both")
-"""
+if __name__ == "__main__":
+    data_analysis = DataAnalysis(r"D:\data\11")
+    data_analysis.output_both_phase(0.5,4.5,5,10,15,"both",False)
+    """
+    data_analysis.data_analysis("acq",15,"both")
+    data_analysis.data_analysis("ext",15,"both")
+    """

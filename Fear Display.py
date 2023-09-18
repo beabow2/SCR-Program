@@ -331,7 +331,7 @@ class FearDisplayApp:
         # Re-plot
         self.data_analysis(self.file_path)
 
-
-app = FearDisplayApp()
-app.run()
+if __name__ == "__main__":
+    app = FearDisplayApp()
+    app.run()
 

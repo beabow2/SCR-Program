@@ -170,7 +170,7 @@ class Ledalab_Cleaning_Day2(Ledalab_Cleaning_Base):
 
     def combine_event(self):
         # reext
-        self.reext = pd.concat([self.CSM_reext, self.CSP_reinst], axis=1)
+        self.reext = pd.concat([self.CSM_reext, self.CSP_reext], axis=1)
         # reinst
         self.reinst = pd.concat([self.CSM_reinst, self.CSP_reinst], axis=1)
 
