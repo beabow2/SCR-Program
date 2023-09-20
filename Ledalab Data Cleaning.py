@@ -33,7 +33,7 @@ class Ledalab_Cleaning_Base:
             # find US response
             self.US = data[data["Event.NID"] == 3]["CDA.PhasicMax"]
             self.US.name = "US"
-            self.US.index = range(1, len(self.US) + 1)
+            self.US.index = range(1,len(self.US)+1)
 
 
 class Ledalab_Cleaning_Day1(Ledalab_Cleaning_Base):
@@ -62,10 +62,10 @@ class Ledalab_Cleaning_Day1(Ledalab_Cleaning_Base):
             # find corresponding df
             df_acq = df.iloc[:acq_num]
             # reindex
-            df_acq.index = range(1, len(df_acq) + 1)
+            df_acq.index = range(0, len(df_acq))
             # redo
             df_ext = df.iloc[-ext_num:]
-            df_ext.index = range(1, len(df_ext) + 1)
+            df_ext.index = range(0, len(df_ext))
             setattr(self, f'{event}_acq', df_acq)
             setattr(self, f'{event}_ext', df_ext)
 
@@ -101,11 +101,11 @@ class Ledalab_Cleaning_Day1(Ledalab_Cleaning_Base):
         total_acq_df = {'CSM': [0] * 100, 'CSP': [0] * 100, 'US': [0] * 100, 'difference': [0] * 100}
         total_acq_df = pd.DataFrame.from_dict(total_acq_df)
         # reset index
-        total_acq_df.index = range(1, len(total_acq_df) + 1)
+        total_acq_df.index = range(0, len(total_acq_df) )
         total_ext_df = {'CSM': [0] * 100, 'CSP': [0] * 100, 'difference': [0] * 100}
         total_ext_df = pd.DataFrame.from_dict(total_ext_df)
         # reset index
-        total_ext_df.index = range(1, len(total_ext_df) + 1)
+        total_ext_df.index = range(0, len(total_ext_df))
         # clean all data
         file_counter = 0
         for filename in os.listdir(folder_path):
@@ -162,7 +162,7 @@ class Ledalab_Cleaning_Day2(Ledalab_Cleaning_Base):
             # reindex
             df_reext.index = range(1, len(df_reext) + 1)
             # reinst
-            df_reinst = df.iloc[-ext_num:]
+            df_reinst = df.iloc[-13:]
             df_reinst.index = range(1, len(df_reinst) + 1)
             # assign value
             setattr(self, f'{event}_reext', df_reext)
@@ -233,7 +233,7 @@ class Ledalab_Cleaning_Day2(Ledalab_Cleaning_Base):
 
 if __name__ == "__main__":
     day1 = Ledalab_Cleaning_Day1()
-    day1.day1_data_output(r"D:\data\Day1\leda", r"D:\data\Day1\leda\result\\", 15)
+    day1.day1_data_output(r"D:\data\Day1\leda", r"D:\data\Day1\leda\result\\", 15,standardize=True)
     max_US = day1.get_max_US()
     day2 = Ledalab_Cleaning_Day2()
-    day2.day2_data_output(r"D:\data\ledalab\Day2\clean", r"D:\data\ledalab\Day2\clean\result\\", 15, max_US)
+    day2.day2_data_output(r"D:\data\Day2", r"D:\data\Day2\result\\", 15, max_US,standardize=True)
