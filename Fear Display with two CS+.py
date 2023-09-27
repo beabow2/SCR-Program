@@ -10,9 +10,15 @@ from SCR_Response import SCR_RESP
 class FearDisplayApp:
     def __init__(self):
         self.max_us = 0
+        #CSA
         self.CSP_df = None
         self.CSP_res_figure = None
         self.CSP_response = 0
+        #CSB
+        self.CSA_df = None
+        self.CSA_res_figure = None
+        self.CSA_response = 0
+        #CSM
         self.CSM_df = None
         self.CSM_res_figure = None
         self.CSM_response = 0
@@ -89,20 +95,24 @@ class FearDisplayApp:
         self.label_frame = tk.Frame(self.window, bg='white')
         self.label_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.csp_label = tk.Label(self.label_frame, text="CS+ Response:", font=("Times New Roman", 10), bg='white')
-        self.csp_label.grid(row=1, column=1, padx=30, pady=10)
+        self.csp_label = tk.Label(self.label_frame, text="CSB Response:", font=("Times New Roman", 10), bg='white')
+        self.csp_label.grid(row=1, column=1, padx=20, pady=10)
+
+        self.csa_label = tk.Label(self.label_frame, text="CSA Response:", font=("Times New Roman", 10), bg='white')
+        self.csa_label.grid(row=1, column=2, padx=20, pady=10)
 
         self.csm_label = tk.Label(self.label_frame, text="CS- Response:", font=("Times New Roman", 10), bg='white')
-        self.csm_label.grid(row=1, column=2, padx=30, pady=10)
+        self.csm_label.grid(row=1, column=3, padx=20, pady=10)
 
         self.mus_label = tk.Label(self.label_frame, text="Max US:", font=("Times New Roman", 10), bg='white')
-        self.mus_label.grid(row=1, column=3, padx=30, pady=10)
+        self.mus_label.grid(row=1, column=4, padx=20, pady=10)
+
 
         self.diff_label = tk.Label(self.label_frame, text="Difference:", font=("Times New Roman", 10), bg='white')
-        self.diff_label.grid(row=1, column=4, padx=30, pady=10)
+        self.diff_label.grid(row=1, column=5, padx=20, pady=10)
 
         self.reward_label = tk.Label(self.label_frame, text="Reward: ", font=("Times New Roman", 10), bg='white')
-        self.reward_label.grid(row=1, column=5, padx=30, pady=10)
+        self.reward_label.grid(row=1, column=6, padx=20, pady=10)
 
         self.middle_frame = tk.Frame(self.window, bg='white')
         self.middle_frame.pack(fill=tk.BOTH, expand=True)
@@ -140,25 +150,39 @@ class FearDisplayApp:
         # set rise_end to capture US response
         if self.rise_end <= 9.2:
             self.rise_end = 9.2
-        US_len = len(self.df.loc[self.df[2] == 3])
-        max_us_list = []
-        for self.target in range(1,US_len+1):
-            self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,cs_type=3,
-                                   target=self.target,display_window=self.display_window,order = "reverse")
-            max_us_list.append(self.SCR_resp.get_SCR_response())
-        self.max_us = round(max(max_us_list),4)
+        # add new US == 5
+        for UCS_type in [3,5]:
+            US_len = len(self.df.loc[self.df[2] == UCS_type])
+            print(US_len)
+            print(UCS_type)
+            max_us_list = []
+            for self.target in range(1,US_len+1):
+                self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,cs_type=3,
+                                       target=self.target,display_window=self.display_window,order = "reverse")
+                max_us_list.append(self.SCR_resp.get_SCR_response())
+            if self.max_us < max(max_us_list):
+                self.max_us = round(max(max_us_list),4)
+        self.target = self.parameter.target
 
     # Update CS shown on the GUI
-    def update_GUI(self,CSP_response, CSM_response):
-        self.csp_label.config(text=f"CS+ Response:{CSP_response}")
+    def update_GUI(self,CSP_response,CSA_response, CSM_response):
+        self.csp_label.config(text=f"CSB Response:{CSP_response}")
+        self.csa_label.config(text=f"CSA Response:{CSA_response}")
         self.csm_label.config(text=f"CS- Response:{CSM_response}")
         diff = round(CSP_response - CSM_response, 4)
         self.diff_label.config(text=f"Difference:{diff}")
-        reward = round(300 - 100 * diff)
+        thresholds = [0.5, 0.4, 0.3, 0.2, 0.1]
+        rewards = [0, 100, 200, 300, 400, 500]
+
+        reward = 500  # default value
+        for i, thresh in enumerate(thresholds):
+            if diff > thresh:
+                reward = rewards[i]
+                break
         self.reward_label.config(text=f"Reward:{reward}")
 
     # Graph Update
-    def update_plot(self,CSP_df,CSP_res_figure,CSM_df,CSM_res_figure):
+    def update_plot(self,CSP_df,CSP_res_figure,CSA_df,CSA_res_figure,CSM_df,CSM_res_figure):
         ##draw graph
         self.figure.clear()
         # set the number of graph
@@ -169,10 +193,15 @@ class FearDisplayApp:
                      self.max_y_ax1_ax2 + self.y_scale_value_ax1.get())
         ax3.set_ylim(self.min_y_ax3 - self.y_scale_value_ax3.get(), self.max_y_ax3 + self.y_scale_value_ax3.get())
         # plot the graph
-        ax1.plot(CSP_df[1], label="CS+")
+        ax1.plot(CSP_df[1], label="CSB")
+        print(CSP_df[1])
         ax1.plot(CSP_res_figure[1], "red")
+        ax1.plot(CSA_df[1], label="CSA")
+        ax1.plot(CSA_res_figure[1], "red")
+        print(CSA_df[1])
         ax1.plot(CSM_df[1], "green", label="CS-")
         ax1.plot(CSM_res_figure[1], "red")
+
         """for i in range(len(infl)):
             ax1.scatter(infl[i],CSP_df[1].iloc[infl[i]])
         for i in range(len(infl2)):
@@ -180,44 +209,54 @@ class FearDisplayApp:
         # set title
         ax1.set_title("CS+ & CS-")
         ax1.legend()
-        ax3.plot((CSP_df[1] - CSM_df[1]))
+        ax3.plot((CSP_df[1] - CSM_df[1]),label = "Difference of CSB")
+        ax3.plot((CSA_df[1] - CSM_df[1]),label = "Difference of CSA")
         ax3.set_title("Difference")
+        ax3.legend()
         plt.tight_layout()
         self.canvas.draw()
-    def CS_resp_update(self, CSP_response, CSM_response, CSP_df, CSM_df, CSP_res_figure, CSM_res_figure):
+    def CS_resp_update(self, CSP_response, CSA_response, CSM_response, CSP_df, CSA_df,CSM_df, CSP_res_figure, CSA_res_figure, CSM_res_figure):
         # update CS response shown on the GUI
-        self.update_GUI(CSP_response, CSM_response)
+        self.update_GUI(CSP_response,CSA_response, CSM_response)
         # graph SCR response
         if len(CSP_res_figure) != 0:
             CSP_initial = CSP_res_figure.iloc[0].name
             CSP_res_figure.index = range(CSP_df.index.get_loc(CSP_initial) + 1,
                                          CSP_df.index.get_loc(CSP_initial) + len(CSP_res_figure) + 1)
+        if len(CSA_res_figure) != 0:
+            CSA_initial = CSA_res_figure.iloc[0].name
+            CSA_res_figure.index = range(CSA_df.index.get_loc(CSA_initial) + 1,
+                                         CSA_df.index.get_loc(CSA_initial) + len(CSA_res_figure) + 1)
         if len(CSM_res_figure) != 0:
             CSM_initial = CSM_res_figure.iloc[0].name
             CSM_res_figure.index = range(CSM_df.index.get_loc(CSM_initial) + 1,
                                          CSM_df.index.get_loc(CSM_initial) + len(CSM_res_figure) + 1)
         CSP_df.index = range(1, len(CSP_df) + 1)
+        CSA_df.index = range(1, len(CSA_df) + 1)
         CSM_df.index = range(1, len(CSM_df) + 1)
         ##Find y-axis
-        self.min_y_ax1_ax2 = min(min(CSP_df[1]), min(CSM_df[1])) - 0.5
-        self.max_y_ax1_ax2 = max(max(CSP_df[1]), max(CSM_df[1])) + 0.5
-        self.min_y_ax3 = min(CSP_df[1] - CSM_df[1]) - 0.5
-        self.max_y_ax3 = max(CSP_df[1] - CSM_df[1]) + 0.5
-        self.update_plot(CSP_df, CSP_res_figure, CSM_df, CSM_res_figure)
+        self.min_y_ax1_ax2 = min(min(CSP_df[1]), min(CSA_df[1]), min(CSM_df[1])) - 0.5
+        self.max_y_ax1_ax2 = max(max(CSP_df[1]), max(CSA_df[1]), max(CSM_df[1])) + 0.5
+        self.min_y_ax3 = min(min(CSP_df[1] - CSM_df[1]),min(CSA_df[1] - CSM_df[1])) - 0.5
+        self.max_y_ax3 = max(max(CSP_df[1] - CSM_df[1]),max(CSA_df[1] - CSM_df[1])) + 0.5
+        self.update_plot(CSP_df, CSP_res_figure,CSA_df,CSA_res_figure, CSM_df, CSM_res_figure)
 
     def update_analysis(self):
         if self.max_analysis_var.get() == 1:
             #standarize data
             CSP_response = round((self.CSP_response / self.max_us), 4)
+            CSA_response = round((self.CSA_response / self.max_us), 4)
             CSM_response = round((self.CSM_response / self.max_us), 4)
             CSP_df = self.CSP_df / self.max_us
+            CSA_df = self.CSA_df / self.max_us
             CSM_df = self.CSM_df / self.max_us
             CSP_res_figure = self.CSP_res_figure / self.max_us
+            CSA_res_figure = self.CSA_res_figure / self.max_us
             CSM_res_figure = self.CSM_res_figure / self.max_us
-            self.CS_resp_update(CSP_response, CSM_response, CSP_df, CSM_df, CSP_res_figure, CSM_res_figure)
+            self.CS_resp_update(CSP_response,CSA_response, CSM_response, CSP_df, CSA_df, CSM_df, CSP_res_figure, CSA_res_figure, CSM_res_figure)
         else:
             # before standardized
-            self.CS_resp_update(self.CSP_response, self.CSM_response, self.CSP_df, self.CSM_df, self.CSP_res_figure, self.CSM_res_figure)
+            self.CS_resp_update(self.CSP_response, self.CSA_response,self.CSM_response, self.CSP_df, self.CSA_df, self.CSM_df, self.CSP_res_figure,self.CSA_res_figure, self.CSM_res_figure)
     # Data analysis
     def data_analysis(self,file_path):
         # load data
@@ -228,9 +267,16 @@ class FearDisplayApp:
         ##CS+
         self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,
                                      cs_type=2,target=self.target,display_window=self.display_window,order="reverse")
+        print(self.target)
         self.CSP_response = self.SCR_resp.get_SCR_response()
         self.CSP_df = self.SCR_resp.get_SCR_df()
         self.CSP_res_figure = self.SCR_resp.get_SCR_res_figure()
+        ##CSA
+        self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,
+                                     cs_type=4,target=self.target,display_window=self.display_window,order="reverse")
+        self.CSA_response = self.SCR_resp.get_SCR_response()
+        self.CSA_df = self.SCR_resp.get_SCR_df()
+        self.CSA_res_figure = self.SCR_resp.get_SCR_res_figure()
         ##CS-
         self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,
                                      cs_type=1,target=self.target,display_window=self.display_window,order="reverse")
@@ -241,7 +287,7 @@ class FearDisplayApp:
         ###US
         self.max_US_resp()
         self.mus_label.config(text=f"Max US:{self.max_us:}")
-        ###update and draw CSP and CSM
+        ###update and draw CSP CSA and CSM
         self.update_analysis()
         # figure
         ##reset index

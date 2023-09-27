@@ -26,12 +26,12 @@ class Ledalab_Cleaning_Base:
     # event separate
     def event_separate(self, data, day):
         # find CS- response
-        self.CSM = data[data["Event.NID"] == 1]["CDA.PhasicMax"]
+        self.CSM = data[data["Event.NID"] == 1]["Global.MaxDeflection"]
         # find CS+ response
-        self.CSP = data[data["Event.NID"] == 2]["CDA.PhasicMax"]
+        self.CSP = data[data["Event.NID"] == 2]["Global.MaxDeflection"]
         if day == "Day1":
             # find US response
-            self.US = data[data["Event.NID"] == 3]["CDA.PhasicMax"]
+            self.US = data[data["Event.NID"] == 3]["Global.MaxDeflection"]
             self.US.name = "US"
             self.US.index = range(1,len(self.US)+1)
 

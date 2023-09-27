@@ -21,7 +21,7 @@ class Visualization:
             os.makedirs(new_savepath)
         #draw CS+ and CS-
         fig1, ax1 = plt.subplots()
-        ax1.set_ylim(0,1)
+        ax1.set_ylim(0,1.5)
         ax1.plot(data['CSP'], label='CS+')
         ax1.plot(data['CSM'], label='CS-')
         ax1.set_title('CS+ and CS-')
@@ -31,7 +31,7 @@ class Visualization:
         plt.close(fig1)
         #draw diff
         fig2, ax2 = plt.subplots()
-        ax2.set_ylim(-0.5,0.5)
+        ax2.set_ylim(-0.5,1)
         ax2.plot(data['difference'], label='difference')
         ax2.set_title('Difference')
         image_path = os.path.join(new_savepath, f'difference_{filename}.png')
