@@ -169,12 +169,12 @@ class FearDisplayApp:
         self.csp_label.config(text=f"CSB Response:{CSP_response}")
         self.csa_label.config(text=f"CSA Response:{CSA_response}")
         self.csm_label.config(text=f"CS- Response:{CSM_response}")
-        diff = round(CSP_response - CSM_response, 4)
+        diff = round(CSP_response - CSA_response, 4)
         self.diff_label.config(text=f"Difference:{diff}")
-        thresholds = [0.5, 0.4, 0.3, 0.2, 0.1]
-        rewards = [0, 100, 200, 300, 400, 500]
+        thresholds = [0.1,0.2,0.3,0.4,0.5]
+        rewards = [100, 200, 300, 400, 500]
 
-        reward = 500  # default value
+        reward = 0   # default value
         for i, thresh in enumerate(thresholds):
             if diff > thresh:
                 reward = rewards[i]
@@ -211,6 +211,7 @@ class FearDisplayApp:
         ax1.legend()
         ax3.plot((CSP_df[1] - CSM_df[1]),label = "Difference of CSB")
         ax3.plot((CSA_df[1] - CSM_df[1]),label = "Difference of CSA")
+        ax3.plot((CSP_df[1] - CSA_df[1]),label = "Difference of CSB & CSA")
         ax3.set_title("Difference")
         ax3.legend()
         plt.tight_layout()
@@ -237,8 +238,8 @@ class FearDisplayApp:
         ##Find y-axis
         self.min_y_ax1_ax2 = min(min(CSP_df[1]), min(CSA_df[1]), min(CSM_df[1])) - 0.5
         self.max_y_ax1_ax2 = max(max(CSP_df[1]), max(CSA_df[1]), max(CSM_df[1])) + 0.5
-        self.min_y_ax3 = min(min(CSP_df[1] - CSM_df[1]),min(CSA_df[1] - CSM_df[1])) - 0.5
-        self.max_y_ax3 = max(max(CSP_df[1] - CSM_df[1]),max(CSA_df[1] - CSM_df[1])) + 0.5
+        self.min_y_ax3 = min(min(CSP_df[1] - CSM_df[1]),min(CSA_df[1] - CSM_df[1]),min(CSP_df[1] - CSA_df[1])) - 0.5
+        self.max_y_ax3 = max(max(CSP_df[1] - CSM_df[1]),max(CSA_df[1] - CSM_df[1]),max(CSP_df[1] - CSA_df[1])) + 0.5
         self.update_plot(CSP_df, CSP_res_figure,CSA_df,CSA_res_figure, CSM_df, CSM_res_figure)
 
     def update_analysis(self):
