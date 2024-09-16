@@ -5,8 +5,8 @@ from tkinter import filedialog, ttk, Scale
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from scipy.signal import find_peaks
 from parameter import Parameters
+from SCR_Response import SCR_RESP
 class FearDisplayApp:
     def __init__(self):
         self.max_us = 0
@@ -23,8 +23,48 @@ class FearDisplayApp:
         self.min_y_ax3 = -1.0
         self.max_y_ax3 = 1.0
         self.TIME_STEP = 0.1
-        self.parameter = Parameters()
+        self.init_objects()
+        self.init_parameters()
         self.init_ui()
+    def init_objects(self):
+
+        """
+        Initialize objects
+        :object parameter:
+        -----------------------------------------------------------------------------------------------------------------------------
+        :method reset_to_defaults:
+        Reset all parameters to their default values.
+        :method update_parameters:
+        Update parameters with new values
+        ------------------------------------------------------------------------------------------------------------------------------
+        :object SCR_resp:
+        :method SCR_resp:
+        :param rise_begin: the minimum response onset time
+        :param rise_end:   the maximum response onset time
+        :param max_rise_time:  the maximum time of the rising portion
+        :param cs_type: CS+, CS-, CS+E
+        :param target: which CS to be analyzed (reversed count)
+        :param display_window: window (sec)
+        :param order: how  to calculate the response target
+        :param time_step: time step (sec)
+        :method get_SCR_response
+        :return : SCR_response
+        :method get_SCR_res_figure
+        :return: SCR_res_figure
+        :method SCR_df:
+        :return: SCR_df
+        ---------------------------------------------------------------------------------------------------------------------------
+
+        """
+        self.parameter = Parameters()
+        self.SCR_resp = None
+
+    def init_parameters(self):
+        self.rise_begin = self.parameter.rise_begin
+        self.rise_end = self.parameter.rise_end
+        self.max_rise_time = self.parameter.max_rise_time
+        self.display_window = self.parameter.display_window
+        self.target = self.parameter.target
 
     def init_ui(self):
         self.window = tk.Tk()
@@ -93,120 +133,21 @@ class FearDisplayApp:
         self.file_path = filedialog.askopenfilename(initialdir="/", title="Choose Data",
                                                filetypes=(("txt files", "*.txt"), ("all files", "*.*")))
         if self.file_path:
-            self.data_analysis(self.file_path, self.parameter.rise_begin, self.parameter.rise_end, self.parameter.display_window,
-                          self.parameter.max_rise_time, self.parameter.target)
-
-    def SCR_resp(self,rise_begin, rise_end, max_rise_time, situation, target, display_window, time_step=0.1):
-        """
-        :param rise_begin: the minimum response onset time
-        :param rise_end:   the maximum response onset time
-        :param max_rise_time:  the maximum time of the rising portion
-        :param situation: CS+, CS-, CS+E
-        :param target: which CS to be analyzed (reversed count)
-        :param display_window: window (sec)
-        :param time_step: time step (sec)
-        :return:
-        """
-        min_index = 0
-        max_index = 0
-        place_SCR = self.df.loc[self.df[2] == situation].iloc[-target][0]  # event onset time
-        print(place_SCR)
-
-        # Estimate CS Response
-        SCR_start = self.df[(self.df[0] >= place_SCR + rise_begin) & (self.df[0] <= place_SCR + rise_end)]
-        SCR_df = self.df[(self.df[0] >= place_SCR) & (self.df[0] <= place_SCR + display_window)]
-        print("SCR_df",SCR_df)
-        trough_index = find_peaks(-SCR_start[1])[0]
-        print("trough_index",trough_index)
-        SCR_response = 0
-        # if no trough found in the space
-        if len(trough_index) == 0:
-            min_index = 0
-            max_index = 0
-
-            # if we ignore rise_begin
-            if rise_begin == 0:
-                min_index = SCR_start[1].idxmin()
-                if (min_index + int(max_rise_time / time_step)) <= SCR_df.iloc[-1].name:
-                    SCR_peaks = SCR_df.loc[min_index:min_index + int(max_rise_time / time_step)]
-                else:
-                    SCR_peaks = SCR_df.loc[min_index:]
-                peak_index = find_peaks(SCR_peaks[1])[0]
-                SCR_min = SCR_peaks[1].iloc[0]
-
-                # if no peak
-                if len(peak_index) == 0:
-                    min_index = 0
-                    max_index = 0
-                # if peak
-                else:
-                    SCR_peakrow = SCR_peaks.iloc[peak_index[0]]
-                    SCR_max = SCR_peakrow[1]
-                    SCR_response_temp = SCR_max - SCR_min
-                    if SCR_response_temp > SCR_response:
-                        SCR_response = SCR_response_temp
-                        max_index = SCR_peakrow.name
-        # if we find trough in the space
-        else:
-            for i in range(len(trough_index)):
-                SCR_peaks = SCR_df[trough_index[i] + int(rise_begin / time_step):trough_index[i] + int(
-                    rise_begin / time_step) + int(
-                    max_rise_time / time_step) + 1]
-                print("SCR_peaks",SCR_peaks)
-                peak_index = find_peaks(SCR_peaks[1])[0]
-                SCR_troughrow = SCR_peaks.iloc[0]
-                SCR_min = SCR_troughrow[1]
-                min_index_temp = SCR_troughrow.name
-
-                # if no peak
-                if len(peak_index) == 0:
-                    min_index = 0
-                    max_index = 0
-                # if peak
-                else:
-                    SCR_peakrow = SCR_peaks.iloc[peak_index[0]]
-                    SCR_max = SCR_peakrow[1]
-                    SCR_response_temp = SCR_max - SCR_min
-                    print("SCR_max:",SCR_max,"SCR_min:", SCR_min)
-                    if SCR_response_temp > SCR_response:
-                        SCR_response = SCR_response_temp
-                        max_index = SCR_peakrow.name
-                        min_index = min_index_temp
-
-        # draw the response
-        SCR_res_figure = SCR_df.loc[min_index:max_index]
-        trough_check = find_peaks(-SCR_res_figure[1])[0]
-        print(min_index)
-        print(max_index)
-        # if there is trough between the response
-        if len(trough_check) != 0:
-            SCR_response = 0
-            min_index = 0
-            max_index = 0
-            SCR_res_figure = SCR_df.loc[min_index:max_index]
-
-        if situation == 1:
-            self.CSM_df = SCR_df
-            self.CSM_res_figure = SCR_res_figure
-            self.CSM_response = round(SCR_response,4)
-        elif situation == 2 :
-            self.CSP_df = SCR_df
-            self.CSP_res_figure = SCR_res_figure
-            self.CSP_response = round(SCR_response,4)
-
-
-        return SCR_response
+            self.data_analysis(self.file_path)
 
     # Find Maximum US
-    def max_US_resp(self,rise_begin, rise_end, max_rise_time, display_window):
+    def max_US_resp(self):
         # set rise_end to capture US response
-        if rise_end <= 9.2:
-            rise_end = 9.2
+        if self.rise_end <= 9.2:
+            self.rise_end = 9.2
         US_len = len(self.df.loc[self.df[2] == 3])
-        max_us_list = [self.SCR_resp(rise_begin, rise_end, max_rise_time, 3, target, display_window) for target in
-                       range(1, US_len + 1)]
+        max_us_list = []
+        for self.target in range(1,US_len+1):
+            self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,cs_type=3,
+                                   target=self.target,display_window=self.display_window,order = "reverse")
+            max_us_list.append(self.SCR_resp.get_SCR_response())
+        self.target = self.parameter.target
         self.max_us = round(max(max_us_list),4)
-        print(self.max_us)
 
     # Update CS shown on the GUI
     def update_GUI(self,CSP_response, CSM_response):
@@ -279,17 +220,27 @@ class FearDisplayApp:
             # before standardized
             self.CS_resp_update(self.CSP_response, self.CSM_response, self.CSP_df, self.CSM_df, self.CSP_res_figure, self.CSM_res_figure)
     # Data analysis
-    def data_analysis(self,file_path, rise_begin, rise_end, display_window, max_rise_time, target):
+    def data_analysis(self,file_path):
         # load data
         self.df = pd.read_csv(file_path, delimiter="\t", header=None)
+        # create SCR_RESP
+        self.SCR_resp = SCR_RESP(self.df)
         # CS Response
         ##CS+
-        self.SCR_resp(rise_begin, rise_end, max_rise_time, 2, target, display_window)
+        self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,
+                                     cs_type=2,target=self.target,display_window=self.display_window,order="reverse")
+        self.CSP_response = self.SCR_resp.get_SCR_response()
+        self.CSP_df = self.SCR_resp.get_SCR_df()
+        self.CSP_res_figure = self.SCR_resp.get_SCR_res_figure()
         ##CS-
-        self.SCR_resp(rise_begin, rise_end, max_rise_time, 1, target, display_window)
+        self.SCR_resp.scr_resp(self.rise_begin,self.rise_end,self.max_rise_time,
+                                     cs_type=1,target=self.target,display_window=self.display_window,order="reverse")
+        self.CSM_response = self.SCR_resp.get_SCR_response()
+        self.CSM_df = self.SCR_resp.get_SCR_df()
+        self.CSM_res_figure = self.SCR_resp.get_SCR_res_figure()
         # Standardization
         ###US
-        self.max_US_resp(rise_begin, rise_end, max_rise_time, display_window)
+        self.max_US_resp()
         self.mus_label.config(text=f"Max US:{self.max_us:}")
         ###update and draw CSP and CSM
         self.update_analysis()
@@ -366,21 +317,22 @@ class FearDisplayApp:
         """
         # validate input parameters
         try:
-            rise_begin = float(rise_begin)
-            rise_end = float(rise_end)
-            display_window = float(display_window)
-            max_rise_time = float(max_rise_time)
-            target = int(target)
+            self.rise_begin = float(rise_begin)
+            self.rise_end = float(rise_end)
+            self.display_window = float(display_window)
+            self.max_rise_time = float(max_rise_time)
+            self.target = int(target)
         except ValueError:
             tk.messagebox.showerror("Invalid Value", "Error, please type valid value.")
 
         # check if target is valid
-        if (target <= 0) or (target >= len(self.df[self.df[2] == 2]) + 1):
+        if (self.target <= 0) or (self.target >= len(self.df[self.df[2] == 2]) + 1):
             tk.messagebox.showerror("Invalid Value", "Error, please type valid value.")
 
         # Re-plot
-        self.data_analysis(self.file_path, rise_begin, rise_end, display_window, max_rise_time, target)
+        self.data_analysis(self.file_path)
 
-app = FearDisplayApp()
-app.run()
+if __name__ == "__main__":
+    app = FearDisplayApp()
+    app.run()
 

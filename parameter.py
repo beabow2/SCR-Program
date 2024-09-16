@@ -6,6 +6,12 @@ DEFAULT_TARGET = 1
 
 
 class Parameters:
+    """
+    :method reset_to_defaults:
+    Reset all parameters to their default values.
+    :method update_parameters:
+    Update parameters with new values
+    """
     def __init__(self):
         """
         Initialize parameters with default values.\n
