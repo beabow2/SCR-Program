@@ -177,7 +177,7 @@ class Data_Combine:
             f"B_{spone_num}_reext_reinst_Spon_Recov": reext_reinst_spone_recovery[1]
         }
 
-        # 使用 pd.concat 一次性添加所有新列
+        # adding new columns by pd.concat
         self.total_df = pd.concat([self.total_df, pd.DataFrame(spone_column, index=self.total_df.index)], axis=1)
 
 
